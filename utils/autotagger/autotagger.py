@@ -1,30 +1,27 @@
-from glob import glob
-from json import dump
-from os import makedirs
-from os.path import abspath
-from shutil import copy
+from json import dump as dumpjson
+from os import makedirs, listdir
+from os.path import join as joinpath
+from shutil import copy as copyfiles
 from sys import exit
 
 
 def main():
-    in_path = abspath('./in')
-    out_path = abspath('./out')
-    for pack in glob(f'{in_path}/*'):
-        dirs = [
-            f'{out_path}/{pack.split("/")[-1]}/data',
-            f'{out_path}/{pack.split("/")[-1]}/textures/objects'
-        ]
-        for x in dirs:
-            makedirs(x, exist_ok=True)
-        default = {'tags': {}, 'sets': {}}
-        for tag in [x.split('/')[-1] for x in glob(f'{pack}/textures/objects/tags/*')]:
-            default['tags'].update({tag: [
-                f'textures/objects/{x.split("/")[-1]}' for x in glob(f'{pack}/textures/objects/tags/{tag}/*')
-            ]})
-        for img in glob(f'{pack}/textures/objects/**/*.png', recursive=True):
-            copy(img, dirs[1])
-        with open(f'{dirs[0]}/default.dungeondraft_tags', 'w+') as tagfile:
-            dump(default, tagfile, sort_keys=False, indent=4)
+    for pack in listdir('in'):
+        if pack[0] != '.':
+            for outdir in [joinpath('out', pack, 'data'),
+                           joinpath('out', pack, 'textures', 'objects')]:
+                makedirs(outdir, exist_ok=True)
+
+            default = {'tags': {}, 'sets': {}}
+            for tag in listdir(joinpath('in', pack, 'textures', 'objects', 'tags')):
+                default['tags'].update({tag: [
+                    f"textures/objects/{x}" for x in listdir(joinpath('in', pack, 'textures', 'objects', 'tags', tag))
+                ]})
+                for x in listdir(joinpath('in', pack, 'textures', 'objects', 'tags', tag)):
+                    copyfiles(joinpath('in', pack, 'textures', 'objects', 'tags', tag, x),
+                              joinpath('out', pack, 'textures', 'objects'))
+            with open(joinpath('out', pack, 'data', 'default.dungeondraft_tags'), 'w+') as tagfile:
+                dumpjson(default, tagfile, sort_keys=False, indent=4)
     return 0
 
 

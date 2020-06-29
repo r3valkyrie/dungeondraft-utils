@@ -1,8 +1,8 @@
-import sys
-import os
-import glob
-
-from PIL import Image
+from sys import exit, argv
+from os.path import join as joinpath
+from os.path import basename
+from glob import glob
+from PIL import Image as IMG
 
 
 def main(args):
@@ -29,27 +29,21 @@ def main(args):
                 pass
 
     resize = (256 / dpi)
-    in_path = os.path.abspath('./in')
-    out_path = os.path.abspath('./out')
 
     if not args:
-        args = glob.glob(f'{in_path}/*.png') + glob.glob(f'{in_path}/*.jpg')
+        for x in glob(joinpath('in', '*')):
+            args.append((x, basename(x)))
 
-    for path in args:
-        name = path.split('/')[-1]
-        print(f'Scaling image "{name}"', end='... ')
-        try:
-            with Image.open(path) as img:
-                img = img.resize(
-                    (int((float(img.size[0]) * resize)),
-                     int((float(img.size[1]) * resize))),
-                    Image.ANTIALIAS)
-                img.save(f'{out_path}/{name}')
-        except IOError:
-            raise IOError
-
+    for path, name in args:
+        print(f"Scaling image \"{name}\"", end="... ")
+        with IMG.open(path) as image:
+            image = image.resize(
+                (int((float(image.size[0]) * resize)),
+                 int((float(image.size[1]) * resize))),
+                IMG.ANTIALIAS)
+            image.save(joinpath('out', name))
         print('DONE')
 
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv[1:]))
+    exit(main(argv[1:]))
