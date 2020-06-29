@@ -2,7 +2,7 @@ from sys import exit, argv
 from os.path import join as joinpath
 from os.path import basename
 from glob import glob
-from PIL import Image as IMG
+from PIL import Image
 
 
 def main(args):
@@ -36,12 +36,12 @@ def main(args):
 
     for path, name in args:
         print(f"Scaling image \"{name}\"", end="... ")
-        with IMG.open(path) as image:
-            image = image.resize(
-                (int((float(image.size[0]) * resize)),
-                 int((float(image.size[1]) * resize))),
-                IMG.ANTIALIAS)
-            image.save(joinpath('out', name))
+        with Image.open(path) as img:
+            img = img.resize(
+                (int((float(img.size[0]) * resize)),
+                 int((float(img.size[1]) * resize))),
+                Image.ANTIALIAS)
+            img.save(joinpath('out', name))
         print('DONE')
 
 
